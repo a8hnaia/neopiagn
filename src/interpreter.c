@@ -161,6 +161,7 @@ void run_instruction(ProgramState* state, PgnFunctions fns, Instruction inst) {
 		default:
 			state->depth++;
 			run_function(state, fns, inst);
+			memset(state->piles_list[state->depth], 0, 256 * sizeof(uint8_t));
 			state->depth--;
 			break;
 	}
