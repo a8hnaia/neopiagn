@@ -1,0 +1,35 @@
+html, body {
+	height: 100%;
+}
+
+main {
+	height: 100%;
+	display: flex;
+	flex-direction: row;
+	justify-content: stretch;
+	align-items: stretch;
+}
+
+@media (max-width: 800px) {
+	main {
+		flex-direction: column;
+	}
+}
+
+h3 {
+	display: inline;
+	margin: 0em;
+}
+
+#run {
+	display: inline;
+}
+
+main > * {
+	width: 100%;
+	height: 100%;
+}
+textarea {
+	width: 90%;
+	height: 90%;
+}
