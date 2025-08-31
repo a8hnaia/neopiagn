@@ -161,7 +161,9 @@ void run_instruction(ProgramState* state, PgnFunctions fns, Instruction inst) {
 		default:
 			state->depth++;
 			run_function(state, fns, inst);
-			memset(state->piles_list[state->depth], 0, 256 * sizeof(uint8_t));
+			for (int i = 0; i < 256; i++) {
+				state->piles_list[state->depth][i].length = 0;
+			}
 			state->depth--;
 			break;
 	}
@@ -171,6 +173,7 @@ void run_function(ProgramState* state, PgnFunctions fns, Instruction inst) {
 	PgnFunction* fn = get_function(fns, inst);
 	SVec2 pos = fn->start_position;
 	Direction dir = fn->start_direction;
+	uint8_t repeat = 0;
 	size_t pile_index = 0;
 	for (;;) {
 		if (pos.x > 255 || pos.y > 255) {
@@ -179,7 +182,7 @@ void run_function(ProgramState* state, PgnFunctions fns, Instruction inst) {
 		state->dir = dir;
 		state->pile_index = pile_index;
 		Instruction inst = *get_instruction(fn, pos);
-		if (state->repeat) {
+		if (repeat) {
 			switch (inst) {
 				case I_EMPTY:
 				case I_UP: case I_RIGHT: case I_DOWN: case I_LEFT:
@@ -188,10 +191,10 @@ void run_function(ProgramState* state, PgnFunctions fns, Instruction inst) {
 					run_instruction(state, fns, inst);
 					break;
 				default:
-					for (uint8_t i = 0; i < state->repeat; i++) {
+					for (uint8_t i = 0; i < repeat; i++) {
 						run_instruction(state, fns, inst);
 					}
-					state->repeat = 0;
+					repeat = 0;
 					break;
 			}
 		}
@@ -205,6 +208,8 @@ void run_function(ProgramState* state, PgnFunctions fns, Instruction inst) {
 		dir = state->dir;
 		pile_index = state->pile_index;
 		pos = go_direction(pos, dir);
+		repeat = state->repeat;
+		state->repeat = 0;
 	}
 }
 
