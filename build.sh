@@ -1,3 +1,3 @@
 #!/bin/sh
 cd src
-gcc -O2 -Iinclude common.c interpreter.c parser.c main.c -o ../piagn
+gcc -O2 -Iinclude common.c interpreter.c parser.c main.c -o ../bin/piagn
