@@ -34,7 +34,8 @@ int main(int argc, char** argv) {
 	ParserError err = {0};
 	parse_source(&err, src, fns);
 	if (err.kind) {
-		fprintf(stderr, "Parser error kind: %d, at: %lu:%lu\n", err.kind, err.position.y + 1, err.position.x + 1);
+		fprintf(stderr, "Parser error kind: %d, at: %lu:%lu\n",
+				err.kind, err.position.y + 1, err.position.x + 1);
 		return 1;
 	}
 	ProgramState state = init_program();
