@@ -9,6 +9,7 @@ strview read_entire_file(FILE* fp) {
 	strview str;
 	str.len = ftell(fp);
 	str.ptr = calloc(1, str.len);
+	assert(str.ptr);
 	fseek(fp, 0, SEEK_SET);
 	for (size_t i = 0; i < str.len; i++) {
 		str.ptr[i] = fgetc(fp);

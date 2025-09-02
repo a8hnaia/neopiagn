@@ -8,6 +8,7 @@ PgnFunctions init_functions() {
 			53 * sizeof(PgnFunction)
 			// fns.ptr[i]
 			+ 53 * 256 * 256 * sizeof(Instruction));
+	assert(ptr);
 	fns.ptr = ptr;
 	ptr += 53 * sizeof(PgnFunction);
 	for (int i = 0; i < 53; i++) {

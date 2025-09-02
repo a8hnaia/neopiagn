@@ -12,6 +12,7 @@ ProgramState init_program() {
 			+ 256 * 256 * sizeof(Stack)
 			// state.piles_list[i].ptr
 			+ 256 * 256 * 256 * sizeof(uint8_t));
+	assert(ptr);
 	state.stack.ptr = ptr;
 	ptr += 256 * sizeof(uint8_t);
 	state.piles_list = ptr;
@@ -32,11 +33,35 @@ void free_program(ProgramState* state) {
 	state->stack.ptr = 0;
 }
 
-void push(Stack* stack, uint8_t item) {
-	if (stack->length < 255) {
-		stack->ptr[stack->length] = item;
-		stack->length++;
+void extend_stack(StackContinuation** stack_cont) {
+	if (*stack_cont) {
+		return;
 	}
+	void* ptr = calloc(1,
+			// stack_cont->next
+			sizeof(StackContinuation)
+			// stack_cont->next.ptr
+			+ 256 * sizeof(uint8_t));
+	assert(ptr);
+	*stack_cont = ptr;
+	ptr += sizeof(StackContinuation);
+	(*stack_cont)->ptr = ptr;
+}
+
+void push(Stack* stack, uint8_t item) {
+	if (stack->length <= 255) {
+		stack->ptr[stack->length] = item;
+	}
+	else {
+		StackContinuation** cont = &stack->next;
+		extend_stack(cont);
+		for (size_t i = 0; i < stack->length / 256 - 1; i++) {
+			cont = &(*cont)->next;
+			extend_stack(cont);
+		}
+		(*cont)->ptr[stack->length % 256] = item;
+	}
+	stack->length++;
 }
 
 uint8_t pop(Stack* stack) {
@@ -45,7 +70,16 @@ uint8_t pop(Stack* stack) {
 	}
 	else {
 		stack->length--;
-		return stack->ptr[stack->length];
+		if (stack->length <= 255) {
+			return stack->ptr[stack->length];
+		}
+		else {
+			StackContinuation** cont = &stack->next;
+			for (size_t i = 0; i < stack->length / 256 - 1; i++) {
+				cont = &(*cont)->next;
+			}
+			return (*cont)->ptr[stack->length % 256];
+		}
 	}
 }
 
