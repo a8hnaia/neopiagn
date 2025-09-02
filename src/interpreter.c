@@ -64,7 +64,9 @@ void run_instruction(ProgramState* state, PgnFunctions fns, Instruction inst) {
 			push(&state->stack, 255);
 			break;
 		case I_UP: case I_RIGHT: case I_DOWN: case I_LEFT:
-			state->dir = inst - I_UP;
+			if (state->dir != (inst - I_UP + 2) % 4) {
+				state->dir = inst - I_UP;
+			}
 			break;
 		case I_COND_VT: case I_COND_HZ: {
 			Direction dir1 = inst - I_COND_VT;
@@ -188,7 +190,7 @@ void run_function(ProgramState* state, PgnFunctions fns, Instruction inst) {
 	uint8_t repeat = 0;
 	size_t pile_index = 0;
 	for (;;) {
-		if (pos.x > 255 || pos.y > 255) {
+		if (pos.x >= 256 * fn->size.x || pos.y >= 256 * fn->size.y) {
 			return;
 		}
 		state->dir = dir;

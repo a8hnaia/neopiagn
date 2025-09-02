@@ -213,8 +213,8 @@ void resolve_start(ParserError* err, strview src, PgnFunction* fn) {
 	fn->start_direction = D_RIGHT;
 	SVec2 pos = {0};
 	bool at_found = false;
-	for (pos.y = 0; pos.y < 256; pos.y++) {
-		for (pos.x = 0; pos.x < 256; pos.x++) {
+	for (pos.y = 0; pos.y < 256 * fn->size.y; pos.y++) {
+		for (pos.x = 0; pos.x < 256 * fn->size.x; pos.x++) {
 			Instruction* inst = get_instruction(fn, pos);
 			if (*inst == I_MAIN) {
 				if (at_found) {

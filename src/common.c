@@ -36,33 +36,33 @@ PgnFunction* get_function(PgnFunctions fns, Instruction name) {
 }
 
 Instruction* get_instruction(PgnFunction* fn, SVec2 pos) {
-	if (pos.x > 256 * fn->size.x || pos.y > 256 * fn->size.y) {
+	if (pos.x >= 256 * fn->size.x || pos.y >= 256 * fn->size.y) {
 		return NULL;
 	}
 	else {
-		return &fn->grids[pos.x / 256][256 * (pos.y % 256) + pos.x];
+		return &fn->grids[pos.x / 256][256 * pos.y + pos.x % 256];
 	}
 }
 
 void accomodate_position(PgnFunction* fn, SVec2 pos) {
-	if (pos.y > 256 * fn->size.y) {
+	if (pos.y >= 256 * fn->size.y) {
 		size_t old_height = fn->size.y;
 		fn->size.y = pos.y / 256 + 1;
 		for (size_t i = 0; i < fn->size.x; i++) {
 			fn->grids[i] = realloc(fn->grids[i],
-					fn->size.y * 256 * 256 * sizeof(uint8_t));
+					fn->size.y * 256 * 256 * sizeof(Instruction));
 			assert(fn->grids[i]);
-			memset(fn->grids[i] + 256 * 256 * old_height, 0,
-					256 * 256 * (fn->size.y - old_height));
+			memset(&fn->grids[i][256 * 256 * old_height], 0,
+					256 * 256 * (fn->size.y - old_height) * sizeof(Instruction));
 		}
 	}
-	if (pos.x > 256 * fn->size.x) {
+	if (pos.x >= 256 * fn->size.x) {
 		size_t old_width = fn->size.x;
 		fn->size.x = pos.x / 256 + 1;
 		fn->grids = realloc(fn->grids, fn->size.x * sizeof(Instruction*));
 		assert(fn->grids);
 		for (size_t i = old_width; i < fn->size.x; i++) {
-			fn->grids[i] = calloc(1, fn->size.y * 256 * 256 * sizeof(uint8_t));
+			fn->grids[i] = calloc(1, fn->size.y * 256 * 256 * sizeof(Instruction));
 			assert(fn->grids[i]);
 		}
 	}
