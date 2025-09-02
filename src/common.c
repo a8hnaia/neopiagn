@@ -3,7 +3,10 @@
 PgnFunctions init_functions() {
 	PgnFunctions fns = {0};
 	// Lowercase and uppercase letters, plus main
-	void* ptr = calloc(1, 53 * sizeof(PgnFunction)
+	void* ptr = calloc(1,
+			// fns.ptr
+			53 * sizeof(PgnFunction)
+			// fns.ptr[i]
 			+ 53 * 256 * 256 * sizeof(Instruction));
 	fns.ptr = ptr;
 	ptr += 53 * sizeof(PgnFunction);

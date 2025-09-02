@@ -3,9 +3,14 @@
 
 ProgramState init_program() {
 	ProgramState state = {0};
-	void* ptr = calloc(1, 256 * sizeof(uint8_t)
+	void* ptr = calloc(1,
+			// state.stack
+			256 * sizeof(uint8_t)
+			// state.piles_list
 			+ 256 * sizeof(Stack*)
+			// state.piles_list[i]
 			+ 256 * 256 * sizeof(Stack)
+			// state.piles_list[i].ptr
 			+ 256 * 256 * 256 * sizeof(uint8_t));
 	state.stack.ptr = ptr;
 	ptr += 256 * sizeof(uint8_t);
