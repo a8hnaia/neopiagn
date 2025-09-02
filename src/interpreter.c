@@ -114,7 +114,7 @@ void run_instruction(ProgramState* state, PgnFunctions fns, Instruction inst) {
 			}
 		} break;
 		case I_HALT_VT: case I_HALT_HZ: {
-			Direction dir1 = inst - I_COND_VT;
+			Direction dir1 = inst - I_HALT_VT;
 			Direction dir2 = dir1 + 2;
 			if (state->dir != dir1 && state->dir != dir2) {
 				state->halt = true;
