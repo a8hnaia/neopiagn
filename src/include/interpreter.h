@@ -3,6 +3,7 @@
 
 #include "common.h"
 
+// Linked list of stack continuations.
 typedef struct StackContinuation {
 	uint8_t* ptr;
 	struct StackContinuation* next;
@@ -12,6 +13,7 @@ typedef struct StackContinuation {
 typedef struct {
 	uint8_t* ptr;
 	size_t length;
+	size_t start;
 	StackContinuation* next;
 } Stack;
 
@@ -23,8 +25,7 @@ typedef struct {
 	SVec2 pos;
 	Direction dir;
 	Stack stack;
-	Stack** piles_list;
-	size_t depth;
+	Stack* piles;
 } ProgramState;
 
 // Allocates and initializes a ProgramState.

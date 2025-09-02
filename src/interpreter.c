@@ -6,24 +6,18 @@ ProgramState init_program() {
 	void* ptr = calloc(1,
 			// state.stack
 			256 * sizeof(uint8_t)
-			// state.piles_list
-			+ 256 * sizeof(Stack*)
-			// state.piles_list[i]
-			+ 256 * 256 * sizeof(Stack)
-			// state.piles_list[i].ptr
-			+ 256 * 256 * 256 * sizeof(uint8_t));
+			// state.piles
+			+ 256 * sizeof(Stack)
+			// state.piles[i].ptr
+			+ 256 * 256 * sizeof(uint8_t));
 	assert(ptr);
 	state.stack.ptr = ptr;
 	ptr += 256 * sizeof(uint8_t);
-	state.piles_list = ptr;
-	ptr += 256 * sizeof(Stack*);
+	state.piles = ptr;
+	ptr += 256 * sizeof(Stack);
 	for (size_t i = 0; i < 256; i++) {
-		state.piles_list[i] = ptr;
-		ptr += sizeof(Stack);
-		for (size_t j = 0; j < 256; j++) {
-			state.piles_list[i][j].ptr = ptr;
-			ptr += 256 * sizeof(uint8_t);
-		}
+		state.piles[i].ptr = ptr;
+		ptr += 256 * sizeof(uint8_t);
 	}
 	return state;
 }
@@ -65,7 +59,7 @@ void push(Stack* stack, uint8_t item) {
 }
 
 uint8_t pop(Stack* stack) {
-	if (stack->length == 0) {
+	if (stack->length == stack->start) {
 		return 0;
 	}
 	else {
@@ -184,10 +178,10 @@ void run_instruction(ProgramState* state, PgnFunctions fns, Instruction inst) {
 			break;
 		case I_FROM_PILE:
 			push(&state->stack,
-					pop(&state->piles_list[state->depth][state->pile_index]));
+					pop(&state->piles[state->pile_index]));
 			break;
 		case I_TO_PILE:
-			push(&state->piles_list[state->depth][state->pile_index],
+			push(&state->piles[state->pile_index],
 					pop(&state->stack));
 			break;
 		case I_READ:
@@ -198,12 +192,20 @@ void run_instruction(ProgramState* state, PgnFunctions fns, Instruction inst) {
 			fflush(stdout);
 			break;
 		default:
-			state->depth++;
+			Direction dir = state->dir;
+			size_t pile_lengths[256];
+			size_t pile_starts[256];
+			for (int i = 0; i < 256; i++) {
+				pile_lengths[i] = state->piles[i].length;
+				pile_starts[i] = state->piles[i].start;
+				state->piles[i].start = state->piles[i].length;
+			}
 			run_function(state, fns, inst);
 			for (int i = 0; i < 256; i++) {
-				state->piles_list[state->depth][i].length = 0;
+				state->piles[i].length = pile_lengths[i];
+				state->piles[i].start = pile_starts[i];
 			}
-			state->depth--;
+			state->dir = dir;
 			break;
 	}
 }
