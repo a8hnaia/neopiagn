@@ -78,7 +78,8 @@ typedef enum {
 typedef struct {
 	Direction start_direction;
 	SVec2 start_position;
-	Instruction* grid;
+	SVec2 size;
+	Instruction** grids;
 } PgnFunction;
 
 // An array of 53 (lowercase/uppercase letters and main) piagn functions.
@@ -102,6 +103,9 @@ Instruction* get_instruction(PgnFunction* fn, SVec2 pos);
 
 // The position moved in the direction.
 SVec2 go_direction(SVec2 pos, Direction dir);
+
+// Expand function grid to fit position.
+void accomodate_position(PgnFunction* fn, SVec2 pos);
 
 // The Instruction pointed to if it's not NULL, otherwise fallback.
 Instruction instruction_option(Instruction* inst, Instruction fallback);

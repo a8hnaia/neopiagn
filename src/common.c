@@ -3,22 +3,25 @@
 PgnFunctions init_functions() {
 	PgnFunctions fns = {0};
 	// Lowercase and uppercase letters, plus main
-	void* ptr = calloc(1,
-			// fns.ptr
-			53 * sizeof(PgnFunction)
-			// fns.ptr[i]
-			+ 53 * 256 * 256 * sizeof(Instruction));
-	assert(ptr);
-	fns.ptr = ptr;
-	ptr += 53 * sizeof(PgnFunction);
+	fns.ptr = calloc(1, 53 * sizeof(PgnFunction));
+	assert(fns.ptr);
 	for (int i = 0; i < 53; i++) {
-		fns.ptr[i].grid = ptr;
-		ptr += 256 * 256 * sizeof(Instruction);
+		fns.ptr[i].size = (SVec2){.x = 1, .y = 1};
+		fns.ptr[i].grids = calloc(1, sizeof(Instruction*));
+		assert(fns.ptr[i].grids);
+		fns.ptr[i].grids[0] = calloc(1, 256 * 256 * sizeof(Instruction));
+		assert(fns.ptr[i].grids[0]);
 	}
 	return fns;
 }
 
 void free_functions(PgnFunctions* fns) {
+	for (size_t i = 0; i < 53; i++) {
+		for (size_t j = 0; j < fns->ptr[i].size.x; j++) {
+			free(fns->ptr[i].grids[j]);
+		}
+		free(fns->ptr[i].grids);
+	}
 	free(fns->ptr);
 	fns->ptr = 0;
 };
@@ -33,11 +36,35 @@ PgnFunction* get_function(PgnFunctions fns, Instruction name) {
 }
 
 Instruction* get_instruction(PgnFunction* fn, SVec2 pos) {
-	if (pos.x > 255 || pos.y > 255) {
+	if (pos.x > 256 * fn->size.x || pos.y > 256 * fn->size.y) {
 		return NULL;
 	}
 	else {
-		return &fn->grid[256 * pos.y + pos.x];
+		return &fn->grids[pos.x / 256][256 * (pos.y % 256) + pos.x];
+	}
+}
+
+void accomodate_position(PgnFunction* fn, SVec2 pos) {
+	if (pos.y > 256 * fn->size.y) {
+		size_t old_height = fn->size.y;
+		fn->size.y = pos.y / 256 + 1;
+		for (size_t i = 0; i < fn->size.x; i++) {
+			fn->grids[i] = realloc(fn->grids[i],
+					fn->size.y * 256 * 256 * sizeof(uint8_t));
+			assert(fn->grids[i]);
+			memset(fn->grids[i] + 256 * 256 * old_height, 0,
+					256 * 256 * (fn->size.y - old_height));
+		}
+	}
+	if (pos.x > 256 * fn->size.x) {
+		size_t old_width = fn->size.x;
+		fn->size.x = pos.x / 256 + 1;
+		fn->grids = realloc(fn->grids, fn->size.x * sizeof(Instruction*));
+		assert(fn->grids);
+		for (size_t i = old_width; i < fn->size.x; i++) {
+			fn->grids[i] = calloc(1, fn->size.y * 256 * 256 * sizeof(uint8_t));
+			assert(fn->grids[i]);
+		}
 	}
 }
 

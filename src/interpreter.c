@@ -14,22 +14,13 @@ ProgramState init_program() {
 	return state;
 }
 
-void free_stack_conts(Stack* stack) {
-	StackContinuation* stack_cont = stack->next;
-	while (stack_cont) {
-		StackContinuation* former_cont = stack_cont;
-		stack_cont = stack_cont->next;
-		free(former_cont);
-	}
-}
-
 void free_program(ProgramState* state) {
 	free(state->stack.ptr);
 	state->stack.ptr = NULL;
 	for (size_t i = 0; i < 256; i++) {
-		free(state.piles[i].ptr);
+		free(state->piles[i].ptr);
 	}
-	free(state.piles);
+	free(state->piles);
 	state->piles = NULL;
 }
 

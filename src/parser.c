@@ -187,6 +187,7 @@ void parse_function_body(ParserError* err, strview src, PgnFunctions fns, Parser
 		}
 		Instruction inst = unresolved_instruction(cur);
 		if (inst != I_HALT_VT) {
+			accomodate_position(fn, pos);
 			*get_instruction(fn, pos) = inst;
 		}
 		else {
