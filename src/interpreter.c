@@ -3,21 +3,13 @@
 
 ProgramState init_program() {
 	ProgramState state = {0};
-	void* ptr = calloc(1,
-			// state.stack
-			256 * sizeof(uint8_t)
-			// state.piles
-			+ 256 * sizeof(Stack)
-			// state.piles[i].ptr
-			+ 256 * 256 * sizeof(uint8_t));
-	assert(ptr);
-	state.stack.ptr = ptr;
-	ptr += 256 * sizeof(uint8_t);
-	state.piles = ptr;
-	ptr += 256 * sizeof(Stack);
+	state.stack.ptr = calloc(1, 256 * sizeof(uint8_t));
+	assert(state.stack.ptr);
+	state.piles = calloc(1, 256 * sizeof(Stack));
+	assert(state.piles);
 	for (size_t i = 0; i < 256; i++) {
-		state.piles[i].ptr = ptr;
-		ptr += 256 * sizeof(uint8_t);
+		state.piles[i].ptr = calloc(1, 256 * sizeof(uint8_t));
+		assert(state.piles[i].ptr);
 	}
 	return state;
 }
@@ -32,42 +24,26 @@ void free_stack_conts(Stack* stack) {
 }
 
 void free_program(ProgramState* state) {
-	free_stack_conts(&state->stack);
-	for (int i = 0; i < 256; i++) {
-		free_stack_conts(&state->piles[i]);
-	}
 	free(state->stack.ptr);
-	state->stack.ptr = 0;
+	state->stack.ptr = NULL;
+	for (size_t i = 0; i < 256; i++) {
+		free(state.piles[i].ptr);
+	}
+	free(state.piles);
+	state->piles = NULL;
 }
 
-void extend_stack(StackContinuation** stack_cont) {
-	if (*stack_cont) {
-		return;
-	}
-	void* ptr = calloc(1,
-			// stack_cont->next
-			sizeof(StackContinuation)
-			// stack_cont->next.ptr
-			+ 256 * sizeof(uint8_t));
-	assert(ptr);
-	*stack_cont = ptr;
-	ptr += sizeof(StackContinuation);
-	(*stack_cont)->ptr = ptr;
+void extend_stack(Stack* stack) {
+	stack->capacity += 256;
+	stack->ptr = realloc(stack->ptr, stack->capacity);
+	assert(stack->ptr);
 }
 
 void push(Stack* stack, uint8_t item) {
-	if (stack->length <= 255) {
-		stack->ptr[stack->length] = item;
+	if (stack->length > stack->capacity) {
+		extend_stack(stack);
 	}
-	else {
-		StackContinuation** cont = &stack->next;
-		extend_stack(cont);
-		for (size_t i = 0; i < stack->length / 256 - 1; i++) {
-			cont = &(*cont)->next;
-			extend_stack(cont);
-		}
-		(*cont)->ptr[stack->length % 256] = item;
-	}
+	stack->ptr[stack->length] = item;
 	stack->length++;
 }
 
@@ -77,16 +53,7 @@ uint8_t pop(Stack* stack) {
 	}
 	else {
 		stack->length--;
-		if (stack->length <= 255) {
-			return stack->ptr[stack->length];
-		}
-		else {
-			StackContinuation** cont = &stack->next;
-			for (size_t i = 0; i < stack->length / 256 - 1; i++) {
-				cont = &(*cont)->next;
-			}
-			return (*cont)->ptr[stack->length % 256];
-		}
+		return stack->ptr[stack->length];
 	}
 }
 

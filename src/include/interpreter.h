@@ -3,18 +3,12 @@
 
 #include "common.h"
 
-// Linked list of stack continuations.
-typedef struct StackContinuation {
-	uint8_t* ptr;
-	struct StackContinuation* next;
-} StackContinuation;
-
 // The stack or a pile.
 typedef struct {
 	uint8_t* ptr;
 	size_t length;
+	size_t capacity;
 	size_t start;
-	StackContinuation* next;
 } Stack;
 
 // Data for a piagn program to run.
