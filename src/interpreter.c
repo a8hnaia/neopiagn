@@ -204,7 +204,7 @@ void run_instruction(ProgramState* state, PgnFunctions fns, Instruction inst) {
 			fputc(pop(&state->stack), stdout);
 			fflush(stdout);
 			break;
-		default:
+		default: {
 			Direction dir = state->dir;
 			size_t pile_lengths[256];
 			size_t pile_starts[256];
@@ -219,7 +219,7 @@ void run_instruction(ProgramState* state, PgnFunctions fns, Instruction inst) {
 				state->piles[i].start = pile_starts[i];
 			}
 			state->dir = dir;
-			break;
+		} break;
 	}
 }
 
@@ -269,4 +269,8 @@ void run_function(ProgramState* state, PgnFunctions fns, Instruction inst) {
 
 void run_program(ProgramState* state, PgnFunctions fns) {
 	run_function(state, fns, I_MAIN);
+	state->stack.length = 0;
+	for (int i = 0; i < 256; i++) {
+		state->piles[i].length = 0;
+	}
 }
