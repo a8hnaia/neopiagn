@@ -22,7 +22,20 @@ ProgramState init_program() {
 	return state;
 }
 
+void free_stack_conts(Stack* stack) {
+	StackContinuation* stack_cont = stack->next;
+	while (stack_cont) {
+		StackContinuation* former_cont = stack_cont;
+		stack_cont = stack_cont->next;
+		free(former_cont);
+	}
+}
+
 void free_program(ProgramState* state) {
+	free_stack_conts(&state->stack);
+	for (int i = 0; i < 256; i++) {
+		free_stack_conts(&state->piles[i]);
+	}
 	free(state->stack.ptr);
 	state->stack.ptr = 0;
 }
